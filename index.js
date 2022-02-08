@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 
 require("./startup/config");
+require("./startup/cors")(app);
 require("./startup/routes")(app);
 require("./startup/db")();
 

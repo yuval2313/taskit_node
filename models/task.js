@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const Joi = require("joi");
 
-const statusList = ["toDo", "inProgress", "done"];
+const statusList = ["toDo", "done"];
 
 // Model - Mongoose
 
@@ -9,7 +9,7 @@ const taskSchema = new mongoose.Schema(
   {
     title: {
       type: String,
-      maxlength: 50,
+      maxlength: 100,
       required: true,
     },
     content: {
@@ -37,7 +37,7 @@ const Task = mongoose.model("Task", taskSchema);
 // USED: Joi.object().fork([fields], callback()) - callback maps each field supplied in fields array, become required
 
 const taskValidationSchema = {
-  title: Joi.string().max(50),
+  title: Joi.string().max(100),
   content: Joi.string().max(5000),
   status: Joi.string().valid(...statusList),
 };

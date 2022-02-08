@@ -23,8 +23,8 @@ router.post("/", validation(loginValidation), async (req, res) => {
 // Validation - Joi
 
 const loginSchema = {
-  email: Joi.string().email().min(6).max(50).required(),
-  password: Joi.string().min(8).max(50).required(),
+  email: Joi.string().email().min(6).max(50).required().label("Email"),
+  password: Joi.string().min(8).max(50).required().label("Password"),
 };
 
 function loginValidation(user) {
