@@ -1,6 +1,6 @@
 {
   "name": "taskit_node",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "taskit project backend service",
   "main": "index.js",
   "scripts": {
