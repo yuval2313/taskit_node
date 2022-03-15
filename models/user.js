@@ -27,7 +27,7 @@ const userSchema = new mongoose.Schema(
       // FIXME: alter min & max length?
       type: String,
       minlength: 8,
-      maxlength: 72, // bcrypt creates a has of max 72 BYTES
+      maxlength: 72, // bcrypt creates a hash of max 72 BYTES
       required: true,
       set: (v) => v,
     },

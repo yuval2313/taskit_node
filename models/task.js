@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const Joi = require("joi");
 
-const statusList = ["toDo", "done"];
+const statusList = ["", "todo", "doing", "complete"];
 
 // Model - Mongoose
 
@@ -31,15 +31,19 @@ const taskSchema = new mongoose.Schema(
   { timestamps: true } // automatically sets createdAt & updatedAt
 );
 
+mongoose.Schema.Types.String.checkRequired((v) => typeof v === "string");
+
 const Task = mongoose.model("Task", taskSchema);
 
 // Validation - Joi
 // USED: Joi.object().fork([fields], callback()) - callback maps each field supplied in fields array, become required
 
 const taskValidationSchema = {
-  title: Joi.string().max(100),
-  content: Joi.string().max(5000),
-  status: Joi.string().valid(...statusList),
+  title: Joi.string().max(100).allow(""),
+  content: Joi.string().max(5000).allow(""),
+  status: Joi.string()
+    .valid(...statusList)
+    .allow(""),
 };
 const fields = Object.keys(taskValidationSchema);
 
