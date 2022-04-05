@@ -2,9 +2,17 @@ const mongoose = require("mongoose");
 //TODO: use logger
 
 module.exports = function () {
-  const dbUrl = process.env.DBURL;
+  const { NODE_ENV, DBURL, DB_USERNAME, DB_PASSWORD, DB_HOST } = process.env;
+
+  let dbUrl = DBURL;
+
+  if (NODE_ENV === "production")
+    dbUrl = `mongodb+srv://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}`;
+
   mongoose
     .connect(dbUrl, {
+      retryWrites: true,
+      w: "majority",
       useUnifiedTopology: true,
       useNewUrlParser: true,
     })

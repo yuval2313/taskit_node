@@ -1,7 +1,9 @@
 const mongoose = require("mongoose");
 const Joi = require("joi");
+Joi.objectId = require("joi-objectid")(Joi);
 
 const statusList = ["", "todo", "doing", "complete"];
+const priorityList = ["", "low", "medium", "high", "urgent"];
 
 // Model - Mongoose
 
@@ -22,10 +24,27 @@ const taskSchema = new mongoose.Schema(
       enum: statusList,
       required: true,
     },
+    priority: {
+      type: String,
+      enum: priorityList,
+      required: true,
+    },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
+    },
+    labels: {
+      type: [
+        new mongoose.Schema({
+          name: {
+            type: String,
+            minlength: 1,
+            maxlength: 50,
+            required: true,
+          },
+        }),
+      ],
     },
   },
   { timestamps: true } // automatically sets createdAt & updatedAt
@@ -44,13 +63,19 @@ const taskValidationSchema = {
   status: Joi.string()
     .valid(...statusList)
     .allow(""),
+  priority: Joi.string()
+    .valid(...priorityList)
+    .allow(""),
+  labelIds: Joi.array().items(Joi.objectId()).allow(null),
 };
 const fields = Object.keys(taskValidationSchema);
 
 function taskValidation(task) {
   const schema = Joi.object(taskValidationSchema).fork(
     fields,
-    (field) => field.required() // all fields become required
+    (field) => {
+      return field.required();
+    } // all fields become required
   );
 
   return schema.validate(task);
