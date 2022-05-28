@@ -10,11 +10,7 @@ const { User } = require("../models/user");
 router.post("/", validation(loginValidation), async (req, res) => {
   const { email, password } = req.body;
 
-  const user = await User.findOne({ email });
-  if (!user) return res.status(400).send("Invalid Email or Password!");
-
-  const valid = await user.validatePassword(password);
-  if (!valid) return res.status(400).send("Invalid Email or Password!");
+  const user = await User.checkLogin(email, password);
 
   const token = user.generateAuthToken();
   res.send(token);

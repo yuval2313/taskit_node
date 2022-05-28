@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const HttpError = require("../errors/HttpError");
 
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
@@ -36,7 +37,6 @@ const userSchema = new mongoose.Schema(
 );
 
 userSchema.methods.generateAuthToken = function () {
-  // generates a JWT for the user
   const key = process.env.JWTKEY;
   const token = jwt.sign(
     { _id: this._id, email: this.email, name: this.name },
@@ -47,14 +47,52 @@ userSchema.methods.generateAuthToken = function () {
 };
 
 userSchema.methods.setPassword = async function (password) {
-  // hashes and sets given password
   const salt = await bcrypt.genSalt();
   this.password = await bcrypt.hash(password, salt);
 };
 
 userSchema.methods.validatePassword = function (password) {
-  // validates a password against an already set hashed password
   return bcrypt.compare(password, this.password);
+};
+
+userSchema.statics.checkRegistered = async function (email) {
+  const registeredUser = await this.findOne({ email });
+  if (registeredUser)
+    throw new HttpError({
+      statusCode: 400,
+      message: "This email has already been registered.",
+    });
+};
+
+userSchema.statics.checkLogin = async function (email, password) {
+  const user = await this.findOne({ email });
+  if (!user)
+    throw new HttpError({
+      statusCode: 400,
+      message: "Invalid Email or Password!",
+    });
+
+  const valid = await user.validatePassword(password);
+  if (!valid)
+    throw new HttpError({
+      statusCode: 400,
+      message: "Invalid Email or Password!",
+    });
+
+  return user;
+};
+
+userSchema.statics.createUser = async function (name, email, password) {
+  const user = new this({ name, email });
+
+  await user.setPassword(password);
+  await user.save();
+
+  return user;
+};
+
+userSchema.statics.findUserById = async function (userId) {
+  return await this.findById(userId).select("-password");
 };
 
 const User = mongoose.model("User", userSchema);

@@ -7,7 +7,7 @@ module.exports = function () {
   let dbUrl = DBURL;
 
   if (NODE_ENV === "production")
-    dbUrl = `mongodb+srv://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}`;
+    dbUrl = `mongodb+srv://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}/taskit`;
 
   mongoose
     .connect(dbUrl, {

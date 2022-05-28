@@ -11,26 +11,21 @@ const { User, userValidation } = require("../models/user");
 router.post("/", validation(userValidation), async (req, res) => {
   const { name, email, password } = req.body;
 
-  const registeredUser = await User.findOne({ email });
-  if (registeredUser)
-    return res.status(400).send("This email has already been registered.");
+  await User.checkRegistered(email);
 
-  const user = new User({ name, email });
-
-  await user.setPassword(password);
-  await user.save();
+  const user = await User.createUser(name, email, password);
 
   const token = user.generateAuthToken();
   res
     .header("x-auth-token", token)
     .header("access-control-expose-headers", "x-auth-token")
-    .send(_.pick(user, ["name", "email"]));
+    .send(_.pick(user, ["_id", "name", "email"]));
 });
 
 router.get("/me", auth, async (req, res) => {
   const { _id: userId } = req.user;
 
-  const user = await User.findById(userId).select("-password");
+  const user = await User.findUserById(userId);
 
   res.send(user);
 });

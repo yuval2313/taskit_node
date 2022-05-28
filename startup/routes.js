@@ -6,8 +6,8 @@ const login = require("../routes/login");
 const tasks = require("../routes/tasks");
 const labels = require("../routes/labels");
 
-const error = require("../middleware/error");
 const auth = require("../middleware/auth");
+const error = require("../middleware/error");
 
 module.exports = (app) => {
   app.use(express.json());

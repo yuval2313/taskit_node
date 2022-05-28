@@ -1,4 +1,6 @@
 const mongoose = require("mongoose");
+const HttpError = require("../errors/HttpError");
+
 const Joi = require("joi");
 Joi.objectId = require("joi-objectid")(Joi);
 
@@ -35,16 +37,8 @@ const taskSchema = new mongoose.Schema(
       required: true,
     },
     labels: {
-      type: [
-        new mongoose.Schema({
-          name: {
-            type: String,
-            minlength: 1,
-            maxlength: 50,
-            required: true,
-          },
-        }),
-      ],
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Label" }],
+      required: true,
     },
   },
   { timestamps: true } // automatically sets createdAt & updatedAt
@@ -52,41 +46,93 @@ const taskSchema = new mongoose.Schema(
 
 mongoose.Schema.Types.String.checkRequired((v) => typeof v === "string");
 
+taskSchema.statics.findUserTasks = async function (userId) {
+  const tasks = await this.find({ userId });
+  if (!tasks || tasks.length === 0)
+    throw new HttpError({
+      statusCode: 404,
+      message: "No tasks found for current user",
+    });
+
+  return tasks;
+};
+
+taskSchema.statics.findTaskById = async function (taskId, userId) {
+  const task = await this.findOne({ _id: taskId, userId });
+  if (!task)
+    throw new HttpError({
+      statusCode: 404,
+      message: "Task with the given id was not found",
+    });
+
+  return task;
+};
+
+taskSchema.statics.updateTask = async function (taskId, userId, body) {
+  const task = await this.findOneAndUpdate({ _id: taskId, userId }, body, {
+    new: true,
+  });
+  if (!task)
+    throw new HttpError({
+      statusCode: 404,
+      message: "Task with the given id was not found",
+    });
+
+  return task;
+};
+
+taskSchema.statics.deleteTask = async function (taskId, userId) {
+  const task = await this.findOneAndDelete({ _id: taskId, userId });
+  if (!task)
+    throw new HttpError({
+      statusCode: 404,
+      message: "Task with the given id was not found",
+    });
+
+  return task;
+};
+
+taskSchema.statics.updateRemovedLabel = async function (
+  labelId,
+  userId,
+  session
+) {
+  await this.updateMany(
+    {
+      labels: mongoose.Types.ObjectId(labelId),
+      userId,
+    },
+    {
+      $pull: {
+        labels: labelId,
+      },
+    },
+    { session }
+  );
+};
+
 const Task = mongoose.model("Task", taskSchema);
 
 // Validation - Joi
-// USED: Joi.object().fork([fields], callback()) - callback maps each field supplied in fields array, become required
 
 const taskValidationSchema = {
-  title: Joi.string().max(100).allow(""),
-  content: Joi.string().max(5000).allow(""),
+  title: Joi.string().max(100).allow("").required(),
+  content: Joi.string().max(5000).allow("").required(),
   status: Joi.string()
     .valid(...statusList)
-    .allow(""),
+    .allow("")
+    .required(),
   priority: Joi.string()
     .valid(...priorityList)
-    .allow(""),
-  labelIds: Joi.array().items(Joi.objectId()).allow(null),
+    .allow("")
+    .required(),
+  labels: Joi.array().items(Joi.objectId()).allow(null).required(),
 };
-const fields = Object.keys(taskValidationSchema);
 
 function taskValidation(task) {
-  const schema = Joi.object(taskValidationSchema).fork(
-    fields,
-    (field) => {
-      return field.required();
-    } // all fields become required
-  );
-
-  return schema.validate(task);
-}
-
-function taskPatchValidation(task) {
-  const schema = Joi.object(taskValidationSchema).min(1).label("task");
-
+  const schema = Joi.object(taskValidationSchema);
   return schema.validate(task);
 }
 
 exports.Task = Task;
 exports.taskValidation = taskValidation;
-exports.taskPatchValidation = taskPatchValidation;
