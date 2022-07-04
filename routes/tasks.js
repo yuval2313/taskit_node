@@ -6,6 +6,7 @@ const validateObjectId = require("../middleware/validateObjectId");
 
 const { Task, taskValidation } = require("../models/task");
 const { Label } = require("../models/label");
+const { Reminder } = require("../models/reminder");
 
 router.get("/", async (req, res) => {
   const { _id: userId } = req.user;
@@ -55,7 +56,7 @@ router.delete("/:id", validateObjectId, async (req, res) => {
   const { _id: userId } = req.user;
   const { id: taskId } = req.params;
 
-  const task = await Task.deleteTask(taskId, userId);
+  const task = await Task.deleteTask(taskId, userId, Reminder);
 
   return res.send(task);
 });

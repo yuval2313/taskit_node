@@ -38,6 +38,7 @@ const taskSchema = new mongoose.Schema(
     },
     labels: {
       type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Label" }],
+      validate: (val) => val.length <= 50,
       required: true,
     },
   },
@@ -48,7 +49,7 @@ mongoose.Schema.Types.String.checkRequired((v) => typeof v === "string");
 
 taskSchema.statics.findUserTasks = async function (userId) {
   const tasks = await this.find({ userId });
-  if (!tasks || tasks.length === 0)
+  if (!tasks || !tasks.length)
     throw new HttpError({
       statusCode: 404,
       message: "No tasks found for current user",
@@ -81,22 +82,31 @@ taskSchema.statics.updateTask = async function (taskId, userId, body) {
   return task;
 };
 
-taskSchema.statics.deleteTask = async function (taskId, userId) {
-  const task = await this.findOneAndDelete({ _id: taskId, userId });
-  if (!task)
+taskSchema.statics.deleteTask = async function (taskId, userId, Reminder) {
+  const session = await mongoose.connection.startSession();
+  session.startTransaction();
+
+  const task = await this.findOneAndDelete(
+    { _id: taskId, userId },
+    { session }
+  );
+
+  if (!task) {
     throw new HttpError({
       statusCode: 404,
       message: "Task with the given id was not found",
     });
+  }
+
+  await Reminder.deleteMany({ taskId }, { session });
+
+  await session.commitTransaction();
+  session.endSession();
 
   return task;
 };
 
-taskSchema.statics.updateRemovedLabel = async function (
-  labelId,
-  userId,
-  session
-) {
+taskSchema.statics.removeLabel = async function (labelId, userId, session) {
   await this.updateMany(
     {
       labels: mongoose.Types.ObjectId(labelId),
@@ -111,11 +121,20 @@ taskSchema.statics.updateRemovedLabel = async function (
   );
 };
 
+taskSchema.statics.verifyTaskId = async function (taskId, userId) {
+  const task = await this.findOne({ _id: taskId, userId });
+  if (!task)
+    throw new HttpError({
+      statusCode: 400,
+      message: "Invalid taskId!",
+    });
+};
+
 const Task = mongoose.model("Task", taskSchema);
 
 // Validation - Joi
 
-const taskValidationSchema = {
+const validationSchema = {
   title: Joi.string().max(100).allow("").required(),
   content: Joi.string().max(5000).allow("").required(),
   status: Joi.string()
@@ -126,11 +145,11 @@ const taskValidationSchema = {
     .valid(...priorityList)
     .allow("")
     .required(),
-  labels: Joi.array().items(Joi.objectId()).allow(null).required(),
+  labels: Joi.array().items(Joi.objectId()).max(50).allow(null).required(),
 };
 
 function taskValidation(task) {
-  const schema = Joi.object(taskValidationSchema);
+  const schema = Joi.object(validationSchema);
   return schema.validate(task);
 }
 

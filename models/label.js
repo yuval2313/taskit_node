@@ -23,7 +23,7 @@ const labelSchema = new mongoose.Schema(
 
 labelSchema.statics.findUserLabels = async function (userId) {
   const labels = await this.find({ userId });
-  if (!labels || labels.length === 0)
+  if (!labels || !labels.length)
     throw new HttpError({
       statusCode: 404,
       message: "No labels found for current user",
@@ -44,15 +44,14 @@ labelSchema.statics.findLabelById = async function (labelId, userId) {
 };
 
 labelSchema.statics.updateLabel = async function (labelId, userId, body) {
-  const label = await Label.findOneAndUpdate({ _id: labelId, userId }, body, {
+  const label = await this.findOneAndUpdate({ _id: labelId, userId }, body, {
     new: true,
   });
-  if (!label) {
+  if (!label)
     throw new HttpError({
       statusCode: 404,
       message: "Label with the given id was not found",
     });
-  }
 
   return label;
 };
@@ -66,15 +65,13 @@ labelSchema.statics.deleteLabel = async function (labelId, userId) {
     { session }
   );
 
-  if (!label) {
-    await session.abortTransaction();
+  if (!label)
     throw new HttpError({
       statusCode: 404,
       message: "Label with the given ID was not found",
     });
-  }
 
-  await Task.updateRemovedLabel(labelId, userId, session);
+  await Task.removeLabel(labelId, userId, session);
 
   await session.commitTransaction();
   session.endSession();
