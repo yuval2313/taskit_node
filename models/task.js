@@ -82,14 +82,8 @@ taskSchema.statics.updateTask = async function (taskId, userId, body) {
   return task;
 };
 
-taskSchema.statics.deleteTask = async function (taskId, userId, Reminder) {
-  const session = await mongoose.connection.startSession();
-  session.startTransaction();
-
-  const task = await this.findOneAndDelete(
-    { _id: taskId, userId },
-    { session }
-  );
+taskSchema.statics.deleteTask = async function (taskId, userId) {
+  const task = await this.findOneAndDelete({ _id: taskId, userId });
 
   if (!task) {
     throw new HttpError({
@@ -97,11 +91,6 @@ taskSchema.statics.deleteTask = async function (taskId, userId, Reminder) {
       message: "Task with the given id was not found",
     });
   }
-
-  await Reminder.deleteMany({ taskId }, { session });
-
-  await session.commitTransaction();
-  session.endSession();
 
   return task;
 };
@@ -119,15 +108,6 @@ taskSchema.statics.removeLabel = async function (labelId, userId, session) {
     },
     { session }
   );
-};
-
-taskSchema.statics.verifyTaskId = async function (taskId, userId) {
-  const task = await this.findOne({ _id: taskId, userId });
-  if (!task)
-    throw new HttpError({
-      statusCode: 400,
-      message: "Invalid taskId!",
-    });
 };
 
 const Task = mongoose.model("Task", taskSchema);
