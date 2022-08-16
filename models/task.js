@@ -115,23 +115,30 @@ const Task = mongoose.model("Task", taskSchema);
 // Validation - Joi
 
 const validationSchema = {
-  title: Joi.string().max(100).allow("").required(),
-  content: Joi.string().max(5000).allow("").required(),
+  title: Joi.string().max(100).allow(""),
+  content: Joi.string().max(5000).allow(""),
   status: Joi.string()
     .valid(...statusList)
-    .allow("")
-    .required(),
+    .allow(""),
   priority: Joi.string()
     .valid(...priorityList)
-    .allow("")
-    .required(),
-  labels: Joi.array().items(Joi.objectId()).max(50).allow(null).required(),
+    .allow(""),
+  labels: Joi.array().items(Joi.objectId()).max(50).allow(null),
 };
+const fields = Object.keys(validationSchema);
 
 function taskValidation(task) {
-  const schema = Joi.object(validationSchema);
+  const schema = Joi.object(validationSchema).fork(fields, (field) =>
+    field.required()
+  );
+  return schema.validate(task);
+}
+
+function taskUpdateValidation(task) {
+  const schema = Joi.object(validationSchema).min(1).label("task");
   return schema.validate(task);
 }
 
 exports.Task = Task;
 exports.taskValidation = taskValidation;
+exports.taskUpdateValidation = taskUpdateValidation;

@@ -4,7 +4,11 @@ const router = express.Router();
 const validation = require("../middleware/validation");
 const validateObjectId = require("../middleware/validateObjectId");
 
-const { Task, taskValidation } = require("../models/task");
+const {
+  Task,
+  taskValidation,
+  taskUpdateValidation,
+} = require("../models/task");
 const { Label } = require("../models/label");
 
 router.get("/", async (req, res) => {
@@ -37,13 +41,13 @@ router.post("/", validation(taskValidation), async (req, res) => {
 
 router.put(
   "/:id",
-  [validateObjectId, validation(taskValidation)],
+  [validateObjectId, validation(taskUpdateValidation)],
   async (req, res) => {
     const { _id: userId } = req.user;
     const { id: taskId } = req.params;
     const { labels: labelIds } = req.body;
 
-    await Label.verifyLabelIds(labelIds, userId);
+    if (labelIds) await Label.verifyLabelIds(labelIds, userId);
 
     const task = await Task.updateTask(taskId, userId, req.body);
 
