@@ -1,23 +1,16 @@
-const jwt = require("jsonwebtoken");
 const HttpError = require("../errors/HttpError");
+const { User } = require("../models/user");
 
-module.exports = function (req, res, next) {
-  const token = req.header("x-auth-token");
-  if (!token)
+module.exports = async function (req, res, next) {
+  const { googleId } = req.user;
+  const user = await User.findUserByGoogleId(googleId);
+
+  if (!user)
     throw new HttpError({
       statusCode: 401,
-      message: "No Authentication Provided!",
+      message: "Current google account is not a registered user!",
     });
 
-  try {
-    const key = process.env.JWTKEY;
-    const decoded = jwt.verify(token, key);
-    req.user = decoded;
-    next();
-  } catch (ex) {
-    throw new HttpError({
-      statusCode: 400,
-      message: "Invalid Authentication!",
-    });
-  }
+  req.user = user;
+  next();
 };
