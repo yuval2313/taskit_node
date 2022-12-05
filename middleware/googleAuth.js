@@ -1,4 +1,4 @@
-const { validateToken } = require("../helpers/googleAuth");
+const { validateToken } = require("../helpers/google");
 
 module.exports = async function (req, res, next) {
   const token = req.header("x-auth-token");

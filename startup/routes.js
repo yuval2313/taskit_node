@@ -5,6 +5,7 @@ const login = require("../routes/login");
 const users = require("../routes/users");
 const tasks = require("../routes/tasks");
 const labels = require("../routes/labels");
+const gcal = require("../routes/gcal");
 
 const googleAuth = require("../middleware/googleAuth");
 const auth = require("../middleware/auth");
@@ -16,5 +17,6 @@ module.exports = (app) => {
   app.use("/api/users", [googleAuth, auth], users);
   app.use("/api/tasks", [googleAuth, auth], tasks);
   app.use("/api/labels", [googleAuth, auth], labels);
+  app.use("/api/gcal", [googleAuth, auth], gcal);
   app.use(error);
 };

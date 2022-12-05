@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const { validateToken } = require("../helpers/googleAuth");
+const { validateToken } = require("../helpers/google");
 const { User } = require("../models/user");
 
 router.post("/", async (req, res) => {

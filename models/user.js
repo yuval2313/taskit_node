@@ -9,6 +9,9 @@ const userSchema = new mongoose.Schema(
       unique: true,
       required: true,
     },
+    refreshToken: {
+      type: String,
+    },
     name: {
       type: String,
       required: true,
@@ -27,10 +30,6 @@ const userSchema = new mongoose.Schema(
 
 userSchema.statics.findUserByGoogleId = async function (googleId) {
   return await this.findOne({ googleId });
-};
-
-userSchema.statics.findUserById = async function (userId) {
-  return await this.findById(userId);
 };
 
 const User = mongoose.model("User", userSchema);
