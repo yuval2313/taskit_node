@@ -8,7 +8,16 @@ if (!nodeEnv || nodeEnv === "development") {
   );
 }
 if (nodeEnv === "production") {
-  const { PORT, DB_HOST, DB_USERNAME, DB_PASSWORD, JWTKEY } = process.env;
+  const {
+    PORT,
+    DB_HOST,
+    DB_USERNAME,
+    DB_PASSWORD,
+    JWTKEY,
+    OAUTH_CLIENT_ID,
+    OAUTH_CLIENT_SECRET,
+    OAUTH_REDIRECT_URI,
+  } = process.env;
 
   if (!DB_HOST)
     throw new Error(
@@ -29,5 +38,18 @@ if (nodeEnv === "production") {
   if (!PORT)
     throw new Error(
       "PORT is undefined! Please configure a port for connection."
+    );
+
+  if (!OAUTH_CLIENT_ID)
+    throw new Error(
+      "OAUTH_CLIENT_ID is undefined! Please configure your OAuth client ID."
+    );
+  if (!OAUTH_CLIENT_SECRET)
+    throw new Error(
+      "OAUTH_CLIENT_SECRET is undefined! Please configure your OAuth client secret."
+    );
+  if (!OAUTH_REDIRECT_URI)
+    throw new Error(
+      "OAUTH_REDIRECT_URI is undefined! Please configure a redirect URI to your frontend application."
     );
 }
