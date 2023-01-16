@@ -1,8 +1,9 @@
 const dotenv = require("dotenv");
+dotenv.config();
+
 const nodeEnv = process.env.NODE_ENV;
 
 if (!nodeEnv || nodeEnv === "development") {
-  dotenv.config();
   console.log(
     `To enable database replica sets in development (for use with transactions): Please configure custom DBURL with MongoDB connection string.`
   );
