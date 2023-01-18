@@ -1,0 +1,10 @@
+{
+  "apps": [
+    {
+      "name": "taskit_node",
+      "script": "npm",
+      "interpreter": "none",
+      "args": "start"
+    }
+  ]
+}
