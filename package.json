@@ -22,7 +22,9 @@
     "joi-objectid": "^4.0.2",
     "joi-password-complexity": "^5.1.0",
     "lodash": "^4.17.21",
-    "mongoose": "^6.3.3"
+    "mongoose": "^6.3.3",
+    "winston": "^3.8.2",
+    "winston-mongodb": "^5.1.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.15"

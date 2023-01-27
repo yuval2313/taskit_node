@@ -1,10 +1,10 @@
 const mongoose = require("mongoose");
-//TODO: use logger
+const logger = require("./logging");
 
 module.exports = function () {
-  const { NODE_ENV, DBURL, DB_USERNAME, DB_PASSWORD, DB_HOST } = process.env;
+  const { NODE_ENV, DB_URL, DB_USERNAME, DB_PASSWORD, DB_HOST } = process.env;
 
-  let dbUrl = DBURL;
+  let dbUrl = DB_URL;
 
   if (NODE_ENV === "production")
     dbUrl = `mongodb+srv://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}/taskit`;
@@ -17,6 +17,11 @@ module.exports = function () {
       useNewUrlParser: true,
     })
     .then(() => {
-      console.log(`Connected to ${dbUrl} Successfully!`);
+      logger.info(`Connected to ${dbUrl} Successfully!`);
+
+      if (NODE_ENV === "production")
+        logger
+          .addMongoDBTransport(dbUrl)
+          .then(logger.info(`Logging to database...`));
     });
 };

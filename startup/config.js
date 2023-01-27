@@ -1,4 +1,5 @@
 const dotenv = require("dotenv");
+const logger = require("./logging");
 dotenv.config();
 
 const {
@@ -35,7 +36,7 @@ if (!NODE_ENV || NODE_ENV === "development") {
     throw new Error(
       "DB_URL is undefined! Please set your database connection string."
     );
-  console.log(
+  logger.debug(
     `To enable database replica sets in development (for use with transactions): Please configure DBURL with MongoDB connection string to a live database.`
   );
 }

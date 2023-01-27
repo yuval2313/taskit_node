@@ -1,4 +1,5 @@
 const express = require("express");
+const logger = require("./startup/logging");
 const app = express();
 
 require("./startup/config");
@@ -6,12 +7,11 @@ require("./startup/cors")(app);
 require("./startup/routes")(app);
 require("./startup/db")();
 
-const nodeEnv = process.env.NODE_ENV;
-if (nodeEnv === "production") require("./startup/prod")(app);
+const { NODE_ENV, PORT } = process.env;
 
-const port = process.env.PORT;
-const server = app.listen(port, () =>
-  console.log(`listening on port ${port}...`)
+if (NODE_ENV === "production") require("./startup/prod")(app);
+const server = app.listen(PORT, () =>
+  logger.info(`listening on port ${PORT}...`)
 );
 
 module.exports = server;
