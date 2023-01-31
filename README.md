@@ -103,3 +103,20 @@ DB_USERNAME=
 # MongoDB password
 DB_PASSWORD=
 ```
+
+## Running the App
+
+#### Available scripts
+
+In the project directory you can run:
+
+#### `npm start`
+
+Runs the app on whatever port you've set up.\
+Set up http://localhost:`<YOUR_PORT>` as the base URL of your client side's server requests in development.\
+In production expose your configured port on whatever domain you've set up and set the base URL to that.
+
+#### `npm run dev`
+
+This application utilizes nodemon as a development dependency.\
+You may run this script in development to run the app and it will automatically restart when you make any changes to the code.
